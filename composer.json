@@ -1,0 +1,27 @@
+{
+	"name": "katmore/error-handling",
+	"description": "Numbskull error handling",
+	"homepage": "https://github.com/katmore/error-handling",
+	"license": [
+		"MIT",
+		"GPL-3.0+"
+	],
+	"require": {
+		"php": ">=7.3.1"
+	},
+	"autoload": {
+		"psr-4": {
+			"Katmore\\ErrorHandling\\": "src"
+		}
+	},
+	"autoload-dev": {
+		"psr-4": {
+			"Katmore\\ErrorHandling\\TestCase\\": "tests/phpunit/TestCase",
+			"Katmore\\ErrorHandling\\Tests\\": "tests/phpunit/Tests"
+		}
+	},
+	"require-dev": {
+		"phpunit/php-code-coverage": "^7.0",
+		"phpunit/phpunit": "^8.3"
+	}
+}
