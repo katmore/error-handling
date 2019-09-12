@@ -1,65 +1,149 @@
 <?php
 namespace Katmore\ErrorHandling\Metadata;
 
-class Backtrace implements \Countable, \Iterator
+use Katmore\ErrorHandling\Exception;
+
+class Backtrace implements \Countable, \SeekableIterator
 {
 
     /**
      *
-     * @var BacktraceNode[]
+     * @internal
+     * @var BacktraceNode[] The BacktraceNode objects
      */
     protected $node = [];
 
     /**
      *
-     * @var int
+     * @internal
+     * @var int BacktraceNode iterator position boundary
      */
-    protected $count = 0;
+    protected $boundary = - 1;
 
     /**
      *
-     * @var int
+     * @internal
+     * @var int The current BacktraceNode iterator position
      */
-    protected $pos = 0;
+    protected $position = 0;
 
-    protected function withNode(array $node): Backtrace
+    /**
+     * Create a Backtrace object using with BacktraceNode objects
+     *
+     * @return Backtrace
+     *
+     * @param BacktraceNode[] $backtraceNode
+     *            The <i>BacktraceNode</i> objects 
+     *
+     * @throws Exception\UnexpectedValueException if any backtrace node element is not a <i>BacktraceNode</i> instance
+     */
+    protected function withBacktraceNode(array $backtraceNode): Backtrace
     {
-        $backtrace = clone $this;
-        $backtrace->node = array_filter($node, function ($n) {
-            return $n instanceof BacktraceNode;
+        array_walk($backtraceNode, function ($node, $key) {
+            if (! $node instanceof BacktraceNode) {
+                throw new Exception\UnexpectedValueException("backtrace node element with key '$key' is not an instance of " . BacktraceNode::class);
+            }
         });
-        $backtrace->pos = 0;
-        $backtrace->count = count($backtrace->node);
+
+        /**
+         *
+         * @var Backtrace $backtrace
+         * @internal
+         */
+        $backtrace = clone $this;
+        $backtrace->node = array_values($backtraceNode);
+        $backtrace->position = 0;
+        $backtrace->boundary = count($backtrace->node) - 1;
         return $backtrace;
     }
 
+    /**
+     * Get the number of BacktraceNode elements
+     *
+     * @return int The number of BacktraceNode elements
+     *        
+     * @see \Countable::count()
+     */
     public function count(): int
     {
-        return $this->count;
+        return $this->boundary + 1;
     }
 
-    public function current(): BacktraceNode
+    /**
+     * Seek to a BacktraceNode iterator position
+     *
+     * @return void
+     *
+     * @param int $position
+     *            The BacktraceNode iterator position to seek to
+     *            
+     * @see \SeekableIterator::seek()
+     */
+    public function seek($position): void
     {
-        return $this->node[$this->pos];
+        if ($position > $this->boundary) {
+            throw new Exception\OutOfBoundsException("out of bounds seek: $position (boundary: {$this->boundary})");
+        }
+        $this->position = $position;
     }
 
+    /**
+     * Get the current BacktraceNode iterator element
+     *
+     * @return BacktraceNode|null Either the current <i>BacktraceNode</i> object or <i>null</i> if the current BacktraceNode index position is invalid
+     *        
+     * @see \Iterator::current()
+     */
+    public function current(): ?BacktraceNode
+    {
+        return $this->position > $this->boundary ? $this->node[$this->position] : null;
+    }
+
+    /**
+     * Get the current BacktraceNode iterator position
+     *
+     * @return int The current BacktraceNode iterator position
+     *        
+     * @see \Iterator::key()
+     */
     public function key(): int
     {
-        return $this->pos;
+        return $this->position;
     }
 
-    public function next()
+    /**
+     * Advance the BacktraceNode iterator to the next position
+     *
+     * @return void
+     *
+     * @see \Iterator::next()
+     */
+    public function next(): void
     {
-        $this->pos ++;
+        $this->position ++;
     }
 
-    public function rewind()
+    /**
+     * Reset the BacktraceNode iterator
+     *
+     * @return void
+     *
+     * @see \Iterator::rewind()
+     */
+    public function rewind(): void
     {
-        $this->pos = 0;
+        $this->position = 0;
     }
 
+    /**
+     * Check if the current BacktraceNode iterator position is valid
+     *
+     * @return bool The value <i>true</i> if the current BacktraceNode iterator position is valid, <i>false</i> otherwise
+     *        
+     * @see \Iterator::valid()
+     */
     public function valid(): bool
     {
-        return isset($this->node[$this->pos]);
+        return $this->position > $this->boundary;
     }
 }

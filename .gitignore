@@ -4,4 +4,5 @@
 phpdox.xml
 phpunit.xml
 bin/configure.php
+docs/coverage
 !/**/.gitkeep

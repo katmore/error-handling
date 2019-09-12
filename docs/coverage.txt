@@ -1,0 +1,22 @@
+
+
+Code Coverage Report:     
+  2019-09-12 03:55:45     
+                          
+ Summary:                 
+  Classes: 18.18% (2/11)  
+  Methods: 19.67% (12/61) 
+  Lines:   24.32% (72/296)
+
+\Katmore\ErrorHandling\Component::ArraySerializableComponentTrait
+  Methods:  15.38% ( 2/13)   Lines:  21.88% (  7/ 32)
+\Katmore\ErrorHandling\Metadata::Katmore\ErrorHandling\Metadata\
+  Methods: 100.00% ( 1/ 1)   Lines: 100.00% (  2/  2)
+\Katmore\ErrorHandling\Metadata::Katmore\ErrorHandling\Metadata\Backtrace
+  Methods:  12.50% ( 1/ 8)   Lines:  40.00% (  8/ 20)
+\Katmore\ErrorHandling\Metadata::Katmore\ErrorHandling\Metadata\BacktraceFactory
+  Methods:  66.67% ( 2/ 3)   Lines:  72.22% ( 13/ 18)
+\Katmore\ErrorHandling\Metadata::Katmore\ErrorHandling\Metadata\BacktraceNode
+  Methods:   0.00% ( 0/ 3)   Lines:  50.00% ( 12/ 24)
+\Katmore\ErrorHandling\Payload::Katmore\ErrorHandling\Payload\HandledError
+  Methods: 100.00% ( 6/ 6)   Lines: 100.00% ( 30/ 30)

@@ -42,23 +42,23 @@ class BacktraceFactory
     public function createBacktrace(): Backtrace
     {
         
-        $node = (new class($this->filteredBacktraceArray()) extends BacktraceNode {
+        $backtraceNode = (new class($this->filteredBacktraceArray()) extends BacktraceNode {
 
             /**
              *
              * @var BacktraceNode[]
              */
-            public $node;
+            public $backtraceNode;
 
             public function __construct(array $backtraceArray)
             {
-                $this->node = array_map(function (array $nodeData) {
+                $this->backtraceNode = array_map(function (array $nodeData) {
                     return $this->withNodeData($nodeData['file'], $nodeData['line'], $nodeData);
                 }, $backtraceArray);
             }
-        })->node;
+        })->backtraceNode;
 
-        $backtrace = (new class($node) extends Backtrace {
+        $backtrace = (new class($backtraceNode) extends Backtrace {
 
             /**
              *
@@ -66,9 +66,9 @@ class BacktraceFactory
              */
             public $backtrace;
 
-            public function __construct(array $node)
+            public function __construct(array $backtraceNode)
             {
-                $this->backtrace = $this->withNode($node);
+                $this->backtrace = $this->withBacktraceNode($backtraceNode);
             }
         })->backtrace;
 

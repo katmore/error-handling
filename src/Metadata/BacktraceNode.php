@@ -42,6 +42,10 @@ class BacktraceNode implements \JsonSerializable
 
     public function jsonSerialize()
     {
+        return $this->toArray();
+    }
+    
+    public function toArray() : array {
         return array_filter([
             'file' => $this->file,
             'line' => $this->line,
