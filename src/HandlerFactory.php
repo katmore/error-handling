@@ -1,9 +1,11 @@
 <?php
 namespace Katmore\ErrorHandling;
 
-class HandlerFactory {
+class HandlerFactory
+{
+
     protected $backtraceFactory;
-    public function __construct() {
-        
-    }
+
+    public function __construct()
+    {}
 }
