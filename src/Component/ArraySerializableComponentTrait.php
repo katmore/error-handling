@@ -1,9 +1,11 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Katmore\ErrorHandling\Component;
 
 trait ArraySerializableComponentTrait
 {
-
     private $arrayCacheAssoc;
 
     private $arrayCacheValue = [];
@@ -19,14 +21,16 @@ trait ArraySerializableComponentTrait
         $this->resetArrayCache();
     }
     
-    private function resetArrayCache() : void {
+    private function resetArrayCache(): void
+    {
         $this->arrayCacheAssoc = null;
         $this->arrayCacheValue = [];
         $this->arrayCacheKey = [];
         $this->position = 0;
     }
     
-    private function populateArrayCache() : void {
+    private function populateArrayCache(): void
+    {
         if ($this->arrayCacheAssoc === null) {
             $this->arrayCacheAssoc = $this->toArray();
             $this->arrayCacheValue = array_values($this->arrayCacheAssoc);
@@ -95,19 +99,15 @@ trait ArraySerializableComponentTrait
     /**
      * Advance the BacktraceNode iterator to the next position
      *
-     * @return void
-     *
      * @see \Iterator::next()
      */
     public function next(): void
     {
-        $this->position ++;
+        $this->position++;
     }
     
     /**
      * Reset the BacktraceNode iterator
-     *
-     * @return void
      *
      * @see \Iterator::rewind()
      */
@@ -136,14 +136,16 @@ trait ArraySerializableComponentTrait
      *
      * @see \ArrayAccess::offsetSet()
      */
-    public function offsetUnset($offset)
-    {}
+    public function offsetUnset($offset): void
+    {
+    }
     
     /**
      * This method is ignored
      *
      * @see \ArrayAccess::offsetSet()
      */
-    public function offsetSet($offset, $value)
-    {}
+    public function offsetSet($offset, $value): void
+    {
+    }
 }

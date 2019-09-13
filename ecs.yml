@@ -1,0 +1,14 @@
+parameters:
+    indentation: "    " # "spaces" by default, you can also use "  " (2 spaces), "    " (4 spaces) or "  " (tab)
+    line_ending: "\n"
+services:
+    PhpCsFixer\Fixer\ArrayNotation\ArraySyntaxFixer:
+        syntax: short
+imports:
+    - { resource: '%vendor_dir%/symplify/easy-coding-standard/config/set/clean-code.yaml' }
+    - { resource: '%vendor_dir%/symplify/easy-coding-standard/config/set/common/docblock.yaml' }
+    - { resource: '%vendor_dir%/symplify/easy-coding-standard/config/set/common/phpunit.yaml' }
+    - { resource: '%vendor_dir%/symplify/easy-coding-standard/config/set/common/strict.yaml' }
+    - { resource: '%vendor_dir%/symplify/easy-coding-standard/config/set/php71.yaml' }
+    - { resource: '%vendor_dir%/symplify/easy-coding-standard/config/set/psr12.yaml' }
+    

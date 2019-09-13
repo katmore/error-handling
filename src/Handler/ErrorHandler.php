@@ -1,19 +1,19 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Katmore\ErrorHandling\Handler;
 
 use Katmore\ErrorHandling\Metadata;
 
 abstract class ErrorHandler
 {
-
     /**
-     *
      * @var bool|null determines if error details should be displayed
      */
     private $displayErrors;
 
     /**
-     *
      * @var bool|null determines if cli mode is enabled
      */
     private $cliMode;
@@ -24,7 +24,6 @@ abstract class ErrorHandler
      * Explicitly enable or disable cli mode rather than using
      * the value of the <b><code>PHP_SAPI</code></b> constant.
      *
-     * @return void
      * @param bool $cliModeOverride
      *            If the value is <i>true</i>, cli mode will be ENABLED.
      *            If the value is <i>false</i>, cli mode will be DISABLED.
@@ -32,10 +31,10 @@ abstract class ErrorHandler
      *            the override is reset and the default behavior will be applied: the
      *            value of the <b><code>PHP_SAPI</code></b> constant determines
      *            if cli mode is enabled.
-     *            
+     *
      * @see ErrorHandler::isCliMode()
      */
-    final protected function overrideCliMode(bool $cliModeOverride = null): void
+    final protected function overrideCliMode(?bool $cliModeOverride = null): void
     {
         $this->cliMode = $cliModeOverride;
     }
@@ -46,7 +45,6 @@ abstract class ErrorHandler
      * Explicitly indicate if error details should be displayed
      * rather than using the return value of <b><code>ini_get('display_errors')</code></b>.
      *
-     * @return void
      * @param bool $displayErrorsOverride
      *            If the value is <i>true</i>, error details SHOULD be displayed.
      *            If the value is <i>false</i>, error details SHOULD NOT be displayed.
@@ -54,10 +52,10 @@ abstract class ErrorHandler
      *            the override is reset and the default behavior will be applied:
      *            the return value of <b><code>ini_get('display_errors')</code></b>
      *            determines if error details should be displayed.
-     *            
+     *
      * @see ErrorHandler::displayErrors()
      */
-    final protected function overrideDisplayErrors(bool $displayErrorsOverride = null): void
+    final protected function overrideDisplayErrors(?bool $displayErrorsOverride = null): void
     {
         $this->displayErrors = $displayErrorsOverride;
     }
@@ -73,7 +71,6 @@ abstract class ErrorHandler
     abstract protected function disableCallback(): void;
 
     /**
-     *
      * @see
      */
     public function isCliMode(): bool
@@ -83,7 +80,7 @@ abstract class ErrorHandler
 
     public function displayErrors(): bool
     {
-        return is_bool($this->displayErrors) ? $this->displayErrors : ! ! ini_get('display_errors');
+        return is_bool($this->displayErrors) ? $this->displayErrors : !!ini_get('display_errors');
     }
 
     /**
@@ -98,7 +95,7 @@ abstract class ErrorHandler
      *
      * @param int $flags
      *            bitwise disjunction of flags
-     *            
+     *
      * @see ErrorHandlerFlag::ALWAYS_CLI_MODE
      * @see ErrorHandlerFlag::NEVER_CLI_MODE
      */
@@ -106,7 +103,7 @@ abstract class ErrorHandler
     {
         if ($flags & ErrorHandlerFlag::ALWAYS_CLI_MODE) {
             $this->overrideCliMode(true);
-        } else if ($flags & ErrorHandlerFlag::NEVER_CLI_MODE) {
+        } elseif ($flags & ErrorHandlerFlag::NEVER_CLI_MODE) {
             $this->overrideCliMode(false);
         } else {
             $this->overrideCliMode();
@@ -124,7 +121,7 @@ abstract class ErrorHandler
      *
      * @param int $flags
      *            bitwise disjunction of flags
-     *            
+     *
      * @see ErrorHandlerFlag::ALWAYS_CLI_MODE
      * @see ErrorHandlerFlag::NEVER_CLI_MODE
      */
@@ -137,7 +134,7 @@ abstract class ErrorHandler
         }
     }
 
-    protected function applyDisplayErrorsFlags(int $flags)
+    protected function applyDisplayErrorsFlags(int $flags): void
     {
         if ($flags & ErrorHandlerFlag::NEVER_DISPLAY_ERRORS) {
             $this->overrideDisplayErrors(false);
@@ -150,11 +147,11 @@ abstract class ErrorHandler
 
     protected function outputErrorDocument(array $data, array $backtrace, string $ref): void
     {
-        if (! $this->isCliMode() && ! headers_sent()) {
+        if (!$this->isCliMode() && !headers_sent()) {
             http_response_code(500);
         }
 
-        if (! $this->isCliMode()) {
+        if (!$this->isCliMode()) {
             echo "<!--ERROR--><pre>\n";
         }
 
@@ -168,29 +165,29 @@ abstract class ErrorHandler
         echo "Reference: $ref\n";
 
         if ($this->displayErrors()) {
-            array_walk($data, function (string $v, string $f) {
+            array_walk($data, function (string $v, string $f): void {
                 echo "   - $f: $v\n";
             });
-            if (! empty($backtrace)) {
+            if (!empty($backtrace)) {
                 echo "Backtrace:\n";
-                array_walk($backtrace, function (Metadata\BacktraceNode $trace, int $level) {
+                array_walk($backtrace, function (Metadata\BacktraceNode $trace, int $level): void {
                     echo "   $level.\n";
-                    array_filter($trace->toArray(), function ($v, string $f) {
-                        if (! is_scalar($v))
+                    array_filter($trace->toArray(), function ($v, string $f): void {
+                        if (!is_scalar($v)) {
                             $v = json_encode($v, JSON_INVALID_UTF8_IGNORE);
+                        }
                         echo "     - $f: $v\n";
                     }, ARRAY_FILTER_USE_BOTH);
                 });
             }
         }
 
-        if (! $this->isCliMode()) {
+        if (!$this->isCliMode()) {
             echo "<!--ERROR--><pre>\n";
         }
     }
 
     /**
-     *
      * @param string[] $logMessage
      */
     protected function sendErrorLog(array $logMessage): void
@@ -198,7 +195,7 @@ abstract class ErrorHandler
         if ($this->isCliMode()) {
             return;
         }
-        array_walk($logMessage, function (string $message) {
+        array_walk($logMessage, function (string $message): void {
             error_log($message, 0);
         });
     }

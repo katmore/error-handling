@@ -1,37 +1,34 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Katmore\ErrorHandling\Payload;
 
 use Katmore\ErrorHandling\Metadata;
 
 class PhpError extends HandledError
 {
-
     /**
-     *
      * @var string|null file of the PHP error
      */
     protected $file;
 
     /**
-     *
      * @var string|null line of the PHP error
      */
     protected $line;
 
     /**
-     *
      * @var string PHP error message
      */
     protected $message;
 
     /**
-     *
      * @var int severity of the PHP error
      */
     protected $severity;
 
     /**
-     *
      * @var Metadata\Backtrace
      */
     protected $backtrace;
@@ -93,10 +90,10 @@ class PhpError extends HandledError
             'severity' => isset(Metadata\Severity::DESCRIPTION[$this->severity]) ? Metadata\Severity::DESCRIPTION[$this->severity] : 'UNKNOWN'
         ];
 
-        if (! empty($this->file)) {
+        if (!empty($this->file)) {
             $phpError['file'] = $this->file;
         }
-        if (! empty($this->line)) {
+        if (!empty($this->line)) {
             $phpError['line'] = $this->line;
         }
 
@@ -111,8 +108,7 @@ class PhpError extends HandledError
     protected function withBacktrace(Metadata\Backtrace $backtrace): PhpError
     {
         /**
-         *
-         * @var PhpError $phpError
+         * @var PhpError
          * @internal
          */
         $phpError = clone $this;
@@ -120,11 +116,10 @@ class PhpError extends HandledError
         return $phpError;
     }
 
-    protected function withPhpError(int $severity, string $message, string $file = null, int $line = null): PhpError
+    protected function withPhpError(int $severity, string $message, ?string $file = null, ?int $line = null): PhpError
     {
         /**
-         *
-         * @var PhpError $phpError
+         * @var PhpError
          * @internal
          */
         $phpError = clone $this;

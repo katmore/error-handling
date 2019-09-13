@@ -1,41 +1,37 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Katmore\ErrorHandling\Metadata;
 
 class BacktraceNode implements \JsonSerializable
 {
-
     /**
-     *
      * @var string
      */
     protected $file;
 
     /**
-     *
      * @var int
      */
     protected $line;
 
     /**
-     *
      * @var string|null
      */
     protected $function;
 
     /**
-     *
      * @var string|null
      */
     protected $class;
 
     /**
-     *
      * @var string|null
      */
     protected $type;
 
     /**
-     *
      * @var array|null
      */
     protected $args;
@@ -45,7 +41,8 @@ class BacktraceNode implements \JsonSerializable
         return $this->toArray();
     }
     
-    public function toArray() : array {
+    public function toArray(): array
+    {
         return array_filter([
             'file' => $this->file,
             'line' => $this->line,
@@ -58,7 +55,7 @@ class BacktraceNode implements \JsonSerializable
         });
     }
 
-    protected function withNodeData(string $file, int $line, array $nodeData) : BacktraceNode
+    protected function withNodeData(string $file, int $line, array $nodeData): BacktraceNode
     {
         $backtraceNode = clone $this;
         

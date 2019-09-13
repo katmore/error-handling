@@ -1,36 +1,32 @@
 #!/bin/sh
-# wrapper to peform unit tests
+# peform unit tests
 #
 
-ME_ABOUT='wrapper to peform unit tests'
-ME_USAGE='[<...OPTIONS>] [<TEST-UTIL>] [[--]<...passthru args>]'
-ME_COPYRIGHT='Copyright (c) 2018-2019, Doug Bird. All Rights Reserved.'
-ME_NAME='tests.sh'
+ABOUT='peform unit tests'
+USAGE='[<...OPTIONS>] [<TEST-UTIL>] [[--]<...passthru args>]'
+COPYRIGHT='Copyright (c) 2018-2019, Doug Bird. All Rights Reserved.'
+ME='tests.sh'
 
 #
-# paths
-#
+# resolve $APP_DIR
 [ -n "$APP_DIR" ] || { ME_DIR="/$0"; ME_DIR=${ME_DIR%/*}; ME_DIR=${ME_DIR:-.}; ME_DIR=${ME_DIR#/}/; ME_DIR=$(cd "$ME_DIR"; pwd); APP_DIR=$(cd $ME_DIR/../; pwd); }
-APP_DIR_REALPATH=$(cd "$APP_DIR"; pwd)
-HTML_ROOT=$APP_DIR/web
-DOC_ROOT=$APP_DIR/docs
-PHPUNIT_BIN=$APP_DIR/vendor/bin/phpunit
-PHPUNIT_TESTS_ROOT=$APP_DIR/tests
-HTML_COVERAGE_ROOT_PREFIX=$DOC_ROOT/coverage
-HTML_COVERAGE_SYMLINK_PREFIX=$HTML_ROOT/.coverage
+
+DOC_ROOT=$APP_DIR/docs # documentation root directory
+PHPUNIT_BIN=$APP_DIR/vendor/bin/phpunit # phpunit executable
+PHPUNIT_TESTS_ROOT=$APP_DIR/tests # unit tests root directory
+TEXT_COVERAGE_BASENAME=coverage.txt
+HTML_COVERAGE_SYMLINK= # html coverage report symlink 
 
 #
 # exit codes
-#
-ME_ERROR_USAGE=2
-ME_ERROR_MISSING_DEP=3
-ME_ERROR_ONE_OR_MORE_TESTS_FAILED=4
-ME_ERROR_HTML_COVERAGE_REFORMAT_FAILED=20
+EXIT_CODE_MISSING_DEP=3
+EXIT_CODE_FAILED_TEST=4
+EXIT_CODE_FAILED_REFORMAT=20
 
-CMD_STATUS_DONTUSE="255 $ME_ERROR_USAGE $ME_ERROR_ONE_OR_MORE_TESTS_FAILED $ME_ERROR_MISSING_DEP"
+CMD_STATUS_DONTUSE="255 2 $EXIT_CODE_FAILED_TEST $EXIT_CODE_MISSING_DEP"
 
 print_hint() {
-	echo "  Hint, try: $ME_NAME --usage"
+	echo "  Hint, try: $ME --usage"
 }
 
 sedescape() {
@@ -53,30 +49,20 @@ while getopts :?qhua-: arg; do { case $arg in
       coverage) PRINT_COVERAGE=1;;
       reformat-only|skip-tests) SKIP_TESTS=1; HTML_COVERAGE_REPORT=1; SKIP_COVERAGE_REPORT=1;;
       '') break ;; # end option parsing
-      *) >&2 echo "$ME_NAME: unrecognized long option --$OPTARG"; OPTION_STATUS=$ME_ERROR_USAGE;;
+      *) >&2 echo "$ME: unrecognized long option --$OPTARG"; OPTION_STATUS=2;;
    esac ;; 
-   *) >&2 echo "$ME_NAME: unrecognized option -$OPTARG"; OPTION_STATUS=$ME_ERROR_USAGE;;
+   *) >&2 echo "$ME: unrecognized option -$OPTARG"; OPTION_STATUS=2;;
 esac } done
 shift $((OPTIND-1)) # remove parsed options and args from $@ list
-[ "$OPTION_STATUS" != "0" ] && { >&2 echo "$ME_NAME: (FATAL) one or more invalid options"; >&2 print_hint; exit $OPTION_STATUS; }
+[ "$OPTION_STATUS" = 0 ] || { >&2 echo "$ME: (FATAL) one or more invalid options"; >&2 print_hint; exit $OPTION_STATUS; }
 
 if [ "$HELP_MODE" ]; then
-   echo "$ME_NAME"
-   echo "$ME_ABOUT"
-   echo "$ME_COPYRIGHT"
+   echo "$ME"
+   echo "$ABOUT"
+   echo "$COPYRIGHT"
    echo ""
    echo "Usage:"
-   echo "  $ME_NAME $ME_USAGE"
-   echo ""
-   echo "Arguments:"
-   echo "  <TEST-UTIL>"
-   echo "  Optionally specify a test util; otherwise all test utils are performed."
-   echo "  Acceptable Values: phpunit"
-   echo "  Test Suite Descriptions:"
-   echo "    phpunit: \"Unit\" phpunit test util; see phpunit.xml"
-   echo "       If xdebug is available, a coverage report in text format is (re)generated unless the '--skip-coverage' option is provided."
-   echo "       Coverage report path: $DOC_ROOT/coverage.txt"
-   echo "       HTML coverage report dir: $HTML_ROOT/.coverage"
+   echo "  $ME $USAGE"
    echo ""
    echo "Options:"
    echo "  --skip-coverage"
@@ -93,11 +79,21 @@ if [ "$HELP_MODE" ]; then
    echo "  --reformat-only"
    echo "    Skip all tests and just reformat existing HTML coverage report(s)."
    echo ""
+   echo "Operands:"
+   echo "  <TEST-UTIL>"
+   echo "  Optionally specify a test util; otherwise all test utils are executed."
+   echo "  Acceptable Values: phpunit"
+   echo "  Test Suite Descriptions:"
+   echo "    phpunit: \"Unit\" phpunit test util; see phpunit.xml"
+   echo "       If xdebug is available, a coverage report in text format is (re)generated unless the '--skip-coverage' option is provided."
+   echo "       Coverage report path: $DOC_ROOT/$TEXT_COVERAGE_BASENAME"
+   echo "       HTML coverage report dir: $HTML_COVERAGE_ROOT"
+   echo ""
    echo "Exit code meanings:"
-   echo "    $ME_ERROR_USAGE: command-line usage error"
-   echo "    $ME_ERROR_MISSING_DEP: missing required dependency"
-   echo "    $ME_ERROR_ONE_OR_MORE_TESTS_FAILED: one or more tests failed"
-   echo "   $ME_ERROR_HTML_COVERAGE_REFORMAT_FAILED: failed to reformat HTML coverage report"
+   echo "    2: command-line usage error"
+   echo "    $EXIT_CODE_MISSING_DEP: missing required dependency"
+   echo "    $EXIT_CODE_FAILED_TEST: one or more tests failed"
+   echo "   $EXIT_CODE_FAILED_REFORMAT: failed to reformat HTML coverage report"
    exit 0
 fi
 
@@ -111,17 +107,12 @@ cmd_status_filter() {
 
 PHPUNIT_STATUS=-1
 phpunit_sanity_check() {
-	 [ "$PHPUNIT_STATUS" != "-1" ] && return $PHPUNIT_STATUS
-   if [ ! -f "$PHPUNIT_BIN" ]; then
-      >&2 echo "$ME_NAME: phpunit binary '$PHPUNIT_BIN' is missing or inaccessible, have you run composer?"
-      PHPUNIT_STATUS=$ME_ERROR_MISSING_DEP
-      return $ME_ERROR_MISSING_DEP
-   fi
-   if [ ! -x "$PHPUNIT_BIN" ]; then
-      >&2 echo "$ME_NAME: phpunit binary '$PHPUNIT_BIN' is not executable"
-      PHPUNIT_STATUS=$ME_ERROR_MISSING_DEP
-      return $ME_ERROR_MISSING_DEP
-   fi
+	 [ "$PHPUNIT_STATUS" = "-1" ] || return $PHPUNIT_STATUS
+	 [ -x "$PHPUNIT_BIN" ] || {
+	    >&2 echo "$ME: phpunit binary '$PHPUNIT_BIN' is inaccessible, have you run composer?"
+      PHPUNIT_STATUS=$EXIT_CODE_MISSING_DEP
+      return $EXIT_CODE_MISSING_DEP
+	 }
    PHPUNIT_STATUS=0
 }
 
@@ -131,7 +122,7 @@ phpunit_sanity_check() {
 phpunit() {
    $PHPUNIT_BIN "$@" || {
       cmd_status=$?
-      >&2 echo "$ME_NAME: phpunit failed with exit code $cmd_status"
+      >&2 echo "$ME: phpunit failed with exit code $cmd_status"
       cmd_status_filter $cmd_status
       return
    }
@@ -151,7 +142,7 @@ phpunit_coverage_check() {
 	   return 1
 	 }
    xdebug_sanity_check && return
-   >&2 echo "$ME_NAME: (NOTICE) xdebug is not available, will skip coverage reports"
+   >&2 echo "$ME: (NOTICE) xdebug is not available, will skip coverage reports"
    SKIP_COVERAGE_REPORT=1
    return 1
 }
@@ -160,7 +151,7 @@ phpunit_coverage_check
 phpunit_html_coverage_check() {
    [ "$HTML_COVERAGE_REPORT" = "1" ] || return 1
    xdebug_sanity_check && return 0
-   >&2 echo "$ME_NAME: (NOTICE) xdebug is not available, will skip html coverage reports"
+   >&2 echo "$ME: (NOTICE) xdebug is not available, will skip html coverage reports"
    HTML_COVERAGE_REPORT=0
    return 1
 }
@@ -169,7 +160,7 @@ phpunit_html_coverage_check
 print_phpunit_text_coverage_path() {
 	 local test_suffix=$1
 	 if [ -z "$test_suffix" ]; then
-	 	  printf "$DOC_ROOT/coverage.txt"
+	 	  printf "$DOC_ROOT/$TEXT_COVERAGE_BASENAME"
  	 else
  	    printf "$DOC_ROOT/coverage-$test_suffix.txt"
  	 fi
@@ -178,18 +169,19 @@ print_phpunit_text_coverage_path() {
 print_phpunit_html_coverage_path() {
 	 local test_suffix=$1
 	 if [ -z "$test_suffix" ]; then
-	 	  printf "$HTML_COVERAGE_ROOT_PREFIX"
+	 	  printf "$DOC_ROOT/.coverage"
  	 else
- 	    printf "$HTML_COVERAGE_ROOT_PREFIX-$test_suffix"
+ 	    printf "$DOC_ROOT/.coverage-$test_suffix"
  	 fi
 }
 
 print_phpunit_html_coverage_symlink_path() {
+    [ -n "$HTML_COVERAGE_SYMLINK" ] || return 0
     local test_suffix=$1
     if [ -z "$test_suffix" ]; then
-        printf "$HTML_COVERAGE_SYMLINK_PREFIX"
+        printf "$HTML_COVERAGE_SYMLINK"
     else
-       printf "$HTML_COVERAGE_SYMLINK_PREFIX-$test_suffix"
+       printf "$HTML_COVERAGE_SYMLINK-$test_suffix"
     fi
 }
 
@@ -197,7 +189,7 @@ print_phpunit_coverage_opt() {
 	local test_suffix=$1
 	if phpunit_html_coverage_check; then
    	 printf " --coverage-html=$(print_phpunit_html_coverage_path $test_suffix) "
-   	 if ( [ ! -e "$HTML_COVERAGE_SYMLINK_PREFIX" ] && [ -d "$(dirname $HTML_COVERAGE_SYMLINK_PREFIX)" ] ); then
+   	 if ( [ -n "$HTML_COVERAGE_SYMLINK" ] && [ ! -e "$HTML_COVERAGE_SYMLINK" ] && [ -d "$(dirname $HTML_COVERAGE_SYMLINK)" ] ); then
    	    ln -s $(print_phpunit_html_coverage_path $test_suffix) $(print_phpunit_html_coverage_symlink_path)
    	 fi 
    fi
@@ -205,6 +197,8 @@ print_phpunit_coverage_opt() {
 	   printf " --coverage-text=$(print_phpunit_text_coverage_path $test_suffix) "
    fi
 }
+
+
 
 print_phpunit_coverage_report() {
 	 local test_suffix=$1
@@ -230,12 +224,12 @@ reformat_failed() {
    local message="$1"
    local test_suffix=$2
    local output=
-   output="$ME_NAME: error during reformat of $(print_phpunit_test_label $test_suffix) HTML coverage report"
+   output="$ME: error during reformat of $(print_phpunit_test_label $test_suffix) HTML coverage report"
    if [ ! -z "$message" ]; then
       output="$output: $message"
    fi
    >&2 echo "$output"
-   REFORMAT_STATUS=$ME_ERROR_HTML_COVERAGE_REFORMAT_FAILED
+   REFORMAT_STATUS=$EXIT_CODE_FAILED_REFORMAT
    return $REFORMAT_STATUS
 }
 
@@ -244,7 +238,7 @@ reformat_html_coverage() {
    local test_suffix=$1
    local coverage_dir="$(print_phpunit_html_coverage_path $test_suffix)"
    local temp_coverage_dir=
-   echo "$ME_NAME: reformat $(print_phpunit_test_label $test_suffix) HTML coverage report: started"
+   echo "$ME: reformat $(print_phpunit_test_label $test_suffix) HTML coverage report: started"
    [ -d "$coverage_dir" ] || {
       reformat_failed "directory not found: $coverage_dir" $test_suffix; return $?
    }
@@ -270,8 +264,6 @@ reformat_html_coverage() {
       #echo "temp_filename: $temp_filename"
       #echo "filename: $filename"
    done < $temp_coverage_dir/.html-files
-   echo "temp_coverage_dir: $temp_coverage_dir"
-   echo "coverage_dir: $coverage_dir"
    local backup_dir=
    for i in $(seq 1 5); do
       backup_dir="$(dirname $coverage_dir)/.$(basename $coverage_dir)-"$(date "+%Y%m%d%H%M%S")
@@ -284,35 +276,53 @@ reformat_html_coverage() {
    mv $temp_coverage_dir $coverage_dir || {
       reformat_failed "failed to replace coverage, 'mv' terminated with exit status $?" $test_suffix; return $?
    }
-   echo "$ME_NAME: reformat $(print_phpunit_test_label $test_suffix) HTML coverage report: complete"
+   rm -rf $backup_dir
+   echo "$ME: reformat $(print_phpunit_test_label $test_suffix) HTML coverage report: complete"
+   local open_path="$coverage_dir/index.html"
+   echo "open_path: $open_path"
+   for open_cmd in xdg-open open; do
+      command -v $open_cmd > /dev/null && {
+        $open_cmd $open_path > /dev/null 2>&1 && {
+          return
+        }
+      }
+   done
+   for open_bin in chromium-browser firefox iceweasel safari; do
+      command -v $open_bin > /dev/null && {
+        nohup $open_bin $open_path > /dev/null 2>&1 &
+        break
+      }
+   done
+   
 }
 
 reformat_txt_coverage() {
+
    [ "$SKIP_COVERAGE_REPORT" != "1" ] || return 0
-   [ ! -f $DOC_ROOT/coverage.txt ] || return 0
+   [ -f $DOC_ROOT/$TEXT_COVERAGE_BASENAME ] || return 0
    
    #
    # prepare temp file
-   rm -rf $DOC_ROOT/.coverage.txt
-   cp $DOC_ROOT/coverage.txt $DOC_ROOT/.coverage.txt
+   rm -f $DOC_ROOT/.$TEXT_COVERAGE_BASENAME
+   cp $DOC_ROOT/$TEXT_COVERAGE_BASENAME $DOC_ROOT/.$TEXT_COVERAGE_BASENAME
    
    #
    # remove report date
    MENU_STARTWITH=$(sedescape 'Code Coverage Report:') || return
    MENU_ENDWITH=$(sedescape ' Summary') || return
-   sed "/^$MENU_STARTWITH/,/^$MENU_ENDWITH/{/^$MENU_STARTWITH/!{/^$MENU_ENDWITH/!d}}" "$DOC_ROOT/.coverage.txt" > "$DOC_ROOT/..coverage.txt"
-   mv "$DOC_ROOT/..coverage.txt" "$DOC_ROOT/.coverage.txt" || return
+   sed "/^$MENU_STARTWITH/,/^$MENU_ENDWITH/{/^$MENU_STARTWITH/!{/^$MENU_ENDWITH/!d}}" "$DOC_ROOT/.$TEXT_COVERAGE_BASENAME" > "$DOC_ROOT/..$TEXT_COVERAGE_BASENAME"
+   mv "$DOC_ROOT/..$TEXT_COVERAGE_BASENAME" "$DOC_ROOT/.$TEXT_COVERAGE_BASENAME" || return
    
    #
    # trim multi newlines
-   sed '/^$/N;/^\n$/D' "$DOC_ROOT/.coverage.txt" > "$DOC_ROOT/..coverage.txt" || return
-   mv "$DOC_ROOT/..coverage.txt" "$DOC_ROOT/.coverage.txt" || return
-   sed '1{/^$/d}' "$DOC_ROOT/.coverage.txt" > "$DOC_ROOT/..coverage.txt" || return
-   mv "$DOC_ROOT/..coverage.txt" "$DOC_ROOT/.coverage.txt" || return
+   sed '/^$/N;/^\n$/D' "$DOC_ROOT/.$TEXT_COVERAGE_BASENAME" > "$DOC_ROOT/..$TEXT_COVERAGE_BASENAME" || return
+   mv "$DOC_ROOT/..$TEXT_COVERAGE_BASENAME" "$DOC_ROOT/.$TEXT_COVERAGE_BASENAME" || return
+   sed '1{/^$/d}' "$DOC_ROOT/.$TEXT_COVERAGE_BASENAME" > "$DOC_ROOT/..$TEXT_COVERAGE_BASENAME" || return
+   mv "$DOC_ROOT/..$TEXT_COVERAGE_BASENAME" "$DOC_ROOT/.$TEXT_COVERAGE_BASENAME" || return
    
    #
-   # copy temp file to coverage.txt
-   mv "$DOC_ROOT/.coverage.txt" "$DOC_ROOT/coverage.txt" || return
+   # copy temp file to $TEXT_COVERAGE_BASENAME
+   mv "$DOC_ROOT/.$TEXT_COVERAGE_BASENAME" "$DOC_ROOT/$TEXT_COVERAGE_BASENAME" || return
 }
 
 
@@ -339,9 +349,9 @@ if [ -n "$TEST_UTIL" ]; then
       exit 0
    fi
 
-   >&2 echo "$ME_NAME: unrecognized <TEST-UTIL>: $TEST_UTIL"
+   >&2 echo "$ME: unrecognized <TEST-UTIL>: $TEST_UTIL"
    >&2 print_hint
-   exit $ME_ERROR_USAGE
+   exit 2
 fi
 
 #
@@ -372,15 +382,15 @@ if [ "$CMD_STATUS" = "0" ]; then
 	 print_phpunit_coverage_report
 	 reformat_html_coverage
 else
-  TESTS_STATUS=$ME_ERROR_ONE_OR_MORE_TESTS_FAILED
+  TESTS_STATUS=$EXIT_CODE_FAILED_TEST
 fi
 
 [ "$REFORMAT_STATUS" = "0" ] || {
-   >&2 echo "$ME_NAME: failed to reformat one or more HTML coverage reports"
+   >&2 echo "$ME: failed to reformat one or more HTML coverage reports"
 }
 
 [ "$TESTS_STATUS" = "0" ] || {
-   >&2 echo "$ME_NAME: one or more tests failed"
+   >&2 echo "$ME: one or more tests failed"
    exit $TESTS_STATUS
 }
 

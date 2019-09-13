@@ -1,0 +1,19 @@
+<html>
+<body>
+
+<ul>
+  <li><a id="coverage-link" href=".coverage/index.html" onclick="window.open(this.href, this.href); return false">index.html</a></li>
+</ul>
+
+<script>
+var targetlinks = document.querySelectorAll('ul');
+
+targetlinks.onclick = function(evt){
+   if (evt.target.tagName === "A")
+       window.open(evt.target.href, evt.target.href);
+
+   return false;
+}
+</script>
+</body>
+</html>

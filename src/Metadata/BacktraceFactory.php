@@ -1,13 +1,14 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Katmore\ErrorHandling\Metadata;
 
 use Katmore\ErrorHandling;
 
 class BacktraceFactory
 {
-
     /**
-     *
      * @var array[]
      */
     protected $backtraceArray;
@@ -29,10 +30,10 @@ class BacktraceFactory
                     return false;
                 }
             }
-            if (! isset($nodeData['file']) && ! is_string($nodeData['file'])) {
+            if (!isset($nodeData['file']) && !is_string($nodeData['file'])) {
                 return false;
             }
-            if (! isset($nodeData['line']) && ! is_int($nodeData['line'])) {
+            if (!isset($nodeData['line']) && !is_int($nodeData['line'])) {
                 return false;
             }
             return true;
@@ -41,11 +42,8 @@ class BacktraceFactory
 
     public function createBacktrace(): Backtrace
     {
-        
         $backtraceNode = (new class($this->filteredBacktraceArray()) extends BacktraceNode {
-
             /**
-             *
              * @var BacktraceNode[]
              */
             public $backtraceNode;
@@ -59,9 +57,7 @@ class BacktraceFactory
         })->backtraceNode;
 
         $backtrace = (new class($backtraceNode) extends Backtrace {
-
             /**
-             *
              * @var Backtrace
              */
             public $backtrace;

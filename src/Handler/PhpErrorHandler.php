@@ -1,16 +1,20 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Katmore\ErrorHandling\Handler;
 
 use Katmore\ErrorHandling;
 
 class PhpErrorHandler extends ErrorHandler
 {
-
     protected function enableCallback(): void
-    {}
+    {
+    }
 
     protected function disableCallback(): void
-    {}
+    {
+    }
 
     /**
      * PHP error handling callback function
@@ -23,7 +27,7 @@ class PhpErrorHandler extends ErrorHandler
      *            error file
      * @param int $errline
      *            error line
-     *            
+     *
      * @see set_error_handler()
      */
     public function callback(int $errno, string $errmsg, string $errfile, int $errline): void
@@ -42,8 +46,9 @@ class PhpErrorHandler extends ErrorHandler
             return;
         }
 
-        if (! $phpError->isFatal())
+        if (!$phpError->isFatal()) {
             return;
+        }
 
         $this->outputErrorDocument($phpError->toArray(), $phpError->getBacktrace(), $phpError->getReference());
 

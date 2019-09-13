@@ -1,13 +1,14 @@
 <?php
-declare(strict_types = 1);
+
+declare(strict_types=1);
+
 namespace Katmore\ErrorHandling\Tests\Unit\Metadata;
 
-use Katmore\ErrorHandling\TestCase;
 use Katmore\ErrorHandling\Metadata;
+use Katmore\ErrorHandling\TestCase;
 
 class BacktraceTest extends TestCase\Unit
 {
-
     public function backtraceArrayProvider(): array
     {
         $backtrace = [
@@ -53,7 +54,6 @@ class BacktraceTest extends TestCase\Unit
     }
 
     /**
-     *
      * @dataProvider backtraceArrayProvider
      */
     public function testCreateBacktrace(array $backtraceArray): Metadata\Backtrace
@@ -64,7 +64,7 @@ class BacktraceTest extends TestCase\Unit
 
         $backtrace = $factory->createBacktrace();
 
-        $this->assertEquals(count($backtraceArray), count($backtrace));
+        $this->assertSame(count($backtraceArray), count($backtrace));
 
         return $backtrace;
     }

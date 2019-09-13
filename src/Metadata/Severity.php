@@ -1,10 +1,12 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Katmore\ErrorHandling\Metadata;
 
-interface Severity {
-    
+interface Severity
+{
     /**
-     *
      * @var int Bitwise disjunction of fatal PHP error types
      *
      * @see E_ERROR
@@ -14,7 +16,7 @@ interface Severity {
      * @see E_COMPILE_ERROR
      * @see E_RECOVERABLE_ERROR
      */
-    const FATAL = E_ERROR | E_USER_ERROR | E_PARSE | E_CORE_ERROR | E_COMPILE_ERROR | E_RECOVERABLE_ERROR;
+    public const FATAL = E_ERROR | E_USER_ERROR | E_PARSE | E_CORE_ERROR | E_COMPILE_ERROR | E_RECOVERABLE_ERROR;
     
     /**
      * Hashmap of severity descriptions
@@ -37,7 +39,7 @@ interface Severity {
      *  @see E_DEPRECATED
      *  @see E_USER_DEPRECATED
      */
-    const DESCRIPTION = [
+    public const DESCRIPTION = [
         E_ERROR => 'E_ERROR',
         E_WARNING => 'E_WARNING',
         E_PARSE => 'E_PARSE',

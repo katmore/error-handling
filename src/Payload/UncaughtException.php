@@ -1,23 +1,25 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Katmore\ErrorHandling\Payload;
 
 use Katmore\ErrorHandling\Metadata;
 
 class UncaughtException extends HandledError
 {
-
     /**
      * @var \Throwable
      */
     protected $exception;
     
     /**
-     *
      * @var Metadata\Backtrace
      */
     protected $backtrace;
     
-    public function getException() : \Throwable {
+    public function getException(): \Throwable
+    {
         return $this->exception;
     }
 
@@ -28,7 +30,6 @@ class UncaughtException extends HandledError
 
     public function toArray(): array
     {
-        
         $uncaughtException = [
             'message' => $this->exception->getMessage(),
             'class' => $this->exception->getMessage(),
@@ -47,14 +48,12 @@ class UncaughtException extends HandledError
         }
         
         return $uncaughtException;
-        
     }
     
     protected function withBacktrace(Metadata\Backtrace $backtrace): UncaughtException
     {
         /**
-         *
-         * @var UncaughtException $uncaughtException
+         * @var UncaughtException
          * @internal
          */
         $uncaughtException = clone $this;
@@ -62,11 +61,11 @@ class UncaughtException extends HandledError
         return $uncaughtException;
     }
     
-    protected function withException(\Throwable $exception) : UncaughtException {
+    protected function withException(\Throwable $exception): UncaughtException
+    {
         
         /**
-         *
-         * @var UncaughtException $uncaughtException
+         * @var UncaughtException
          * @internal
          */
         $uncaughtException = clone $this;

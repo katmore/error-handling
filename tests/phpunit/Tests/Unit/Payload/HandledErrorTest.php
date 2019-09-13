@@ -1,14 +1,15 @@
 <?php
-declare(strict_types = 1);
+
+declare(strict_types=1);
+
 namespace Katmore\ErrorHandling\Tests\Unit\Payload;
 
-use Katmore\ErrorHandling\TestCase;
-use Katmore\ErrorHandling\Payload;
 use Katmore\ErrorHandling\Metadata;
+use Katmore\ErrorHandling\Payload;
+use Katmore\ErrorHandling\TestCase;
 
 class HandledErrorTest extends TestCase\Unit
 {
-
     public function nrotNCharsetProvider(): array
     {
         return [
@@ -19,7 +20,7 @@ class HandledErrorTest extends TestCase\Unit
                 'foo',
             ],
             [
-                - 13,
+                -13,
                 'abcdefghijklmnopqrstuvwxyz',
                 'foo',
                 'sbb',
@@ -28,13 +29,11 @@ class HandledErrorTest extends TestCase\Unit
     }
 
     /**
-     *
      * @dataProvider nrotNCharsetProvider
      */
-    public function testNrotNCharset(int $n, string $charset, string $rotFrom, string $expectedRot)
+    public function testNrotNCharset(int $n, string $charset, string $rotFrom, string $expectedRot): void
     {
         $handledError = new class($rotFrom, $n, $charset) extends Payload\HandledError {
-
             public $actualRot;
 
             public function __construct(string $rotFrom, int $n, string $charset)
@@ -43,13 +42,16 @@ class HandledErrorTest extends TestCase\Unit
             }
 
             public function getBacktrace(): Metadata\Backtrace
-            {}
+            {
+            }
 
-            protected function withBacktrace(Metadata\Backtrace $backtrace)
-            {}
+            protected function withBacktrace(Metadata\Backtrace $backtrace): void
+            {
+            }
 
             public function toArray(): array
-            {}
+            {
+            }
         };
         $this->assertSame($expectedRot, $handledError->actualRot);
     }
@@ -81,13 +83,11 @@ class HandledErrorTest extends TestCase\Unit
     }
 
     /**
-     *
      * @dataProvider rotValuesProvider
      */
-    public function testStrRot(string $rotFrom, string $expectedRot)
+    public function testStrRot(string $rotFrom, string $expectedRot): void
     {
         $handledError = new class($rotFrom) extends Payload\HandledError {
-
             public $actualRot;
 
             public function __construct(string $rotFrom)
@@ -98,13 +98,16 @@ class HandledErrorTest extends TestCase\Unit
             }
 
             public function getBacktrace(): Metadata\Backtrace
-            {}
+            {
+            }
 
-            protected function withBacktrace(Metadata\Backtrace $backtrace)
-            {}
+            protected function withBacktrace(Metadata\Backtrace $backtrace): void
+            {
+            }
 
             public function toArray(): array
-            {}
+            {
+            }
         };
 
         $this->assertSame($expectedRot, $handledError->actualRot);
@@ -117,20 +120,22 @@ class HandledErrorTest extends TestCase\Unit
         $uid = uniqid();
 
         $handledError = new class($uid) extends Payload\HandledError {
-
             public function __construct(string $uid)
             {
                 $this->uid = $uid;
             }
 
             public function getBacktrace(): Metadata\Backtrace
-            {}
+            {
+            }
 
-            protected function withBacktrace(Metadata\Backtrace $backtrace)
-            {}
+            protected function withBacktrace(Metadata\Backtrace $backtrace): void
+            {
+            }
 
             public function toArray(): array
-            {}
+            {
+            }
         };
 
         $data[] = [
@@ -142,10 +147,9 @@ class HandledErrorTest extends TestCase\Unit
     }
 
     /**
-     *
      * @dataProvider handledErrorUidProvider
      */
-    public function testUid(Payload\HandledError $handledError, string $uid)
+    public function testUid(Payload\HandledError $handledError, string $uid): void
     {
         $this->assertSame($uid, $handledError->getUid());
     }
@@ -157,20 +161,22 @@ class HandledErrorTest extends TestCase\Unit
         $time = time();
 
         $handledError = new class($time) extends Payload\HandledError {
-
             public function __construct(int $time)
             {
                 $this->time = $time;
             }
 
             public function getBacktrace(): Metadata\Backtrace
-            {}
+            {
+            }
 
-            protected function withBacktrace(Metadata\Backtrace $backtrace)
-            {}
+            protected function withBacktrace(Metadata\Backtrace $backtrace): void
+            {
+            }
 
             public function toArray(): array
-            {}
+            {
+            }
         };
 
         $data[] = [
@@ -182,10 +188,9 @@ class HandledErrorTest extends TestCase\Unit
     }
 
     /**
-     *
      * @dataProvider handledErrorTimeProvider
      */
-    public function testTime(Payload\HandledError $handledError, int $time)
+    public function testTime(Payload\HandledError $handledError, int $time): void
     {
         $this->assertSame($time, $handledError->getTime());
     }
@@ -200,7 +205,6 @@ class HandledErrorTest extends TestCase\Unit
         $digest = hash('crc32', json_encode($handledErrorArray, JSON_INVALID_UTF8_IGNORE));
 
         $handledError = new class($handledErrorArray) extends Payload\HandledError {
-
             private $handledErrorArray;
 
             public function __construct(array $handledErrorArray)
@@ -209,10 +213,12 @@ class HandledErrorTest extends TestCase\Unit
             }
 
             public function getBacktrace(): Metadata\Backtrace
-            {}
+            {
+            }
 
-            protected function withBacktrace(Metadata\Backtrace $backtrace)
-            {}
+            protected function withBacktrace(Metadata\Backtrace $backtrace): void
+            {
+            }
 
             public function toArray(): array
             {
@@ -229,10 +235,9 @@ class HandledErrorTest extends TestCase\Unit
     }
 
     /**
-     *
      * @dataProvider handledErrorDigestProvider
      */
-    public function testDigest(Payload\HandledError $handledError, string $digest)
+    public function testDigest(Payload\HandledError $handledError, string $digest): void
     {
         $this->assertSame($digest, $handledError->getDigest());
     }
@@ -260,7 +265,6 @@ class HandledErrorTest extends TestCase\Unit
         $reference = "$hostCrc-D$rotDigestAlgo-$digest-P$pid-T$rotTime-$uid";
 
         $handledError = new class($handledErrorArray, $time, $uid) extends Payload\HandledError {
-
             private $handledErrorArray;
 
             public function __construct(array $handledErrorArray, int $time, string $uid)
@@ -271,10 +275,12 @@ class HandledErrorTest extends TestCase\Unit
             }
 
             public function getBacktrace(): Metadata\Backtrace
-            {}
+            {
+            }
 
-            protected function withBacktrace(Metadata\Backtrace $backtrace)
-            {}
+            protected function withBacktrace(Metadata\Backtrace $backtrace): void
+            {
+            }
 
             public function toArray(): array
             {
@@ -291,13 +297,11 @@ class HandledErrorTest extends TestCase\Unit
     }
 
     /**
-     *
      * @dataProvider handledErrorReferenceProvider
      */
-    public function testReference(Payload\HandledError $handledError, string $reference)
+    public function testReference(Payload\HandledError $handledError, string $reference): void
     {
         $this->assertSame($reference, $handledError->getReference());
-
-        var_dump($handledError->getReference());
+        
     }
 }

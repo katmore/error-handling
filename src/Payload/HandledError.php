@@ -1,48 +1,49 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Katmore\ErrorHandling\Payload;
 
-use Katmore\ErrorHandling\Metadata;
 use Katmore\ErrorHandling\Component;
+use Katmore\ErrorHandling\Metadata;
 
 abstract class HandledError implements Component\ArraySerializableComponent
 {
     use Component\ArraySerializableComponentTrait;
 
-    const DIGEST_ALGO = 'crc32';
+    public const DIGEST_ALGO = 'crc32';
 
-    const REFERENCE_FORMAT = '%host-crc%-D%rot-digest-algo%-%digest%-P%pid%-T%rot-timestamp%-%uid%';
+    public const REFERENCE_FORMAT = '%host-crc%-D%rot-digest-algo%-%digest%-P%pid%-T%rot-timestamp%-%uid%';
 
     /**
-     *
      * @var string unique id in lowercase hexits
      */
     protected $uid;
 
     /**
-     *
      * @var int unix timestamp of error occurance
      */
     protected $time;
 
     protected static function nrot(string $s, int $n, string $charset): string
     {
-        
         $clen = strlen($charset);
-        $n = $n % $clen;
-        if (! $n)
+        $n %= $clen;
+        if (!$n) {
             return $s;
-        if ($n < 0)
+        }
+        if ($n < 0) {
             $n += $clen;
+        }
         $rep = substr($charset, $n) . substr($charset, 0, $n);
         return strtr($s, $charset, $rep);
-        
     }
 
     protected static function str_rot(string $str): string
     {
-        $str = static::nrot($str,13,'abcdefghijklmnopqrstuvwxyz');
-        $str = static::nrot($str,13,strtoupper('abcdefghijklmnopqrstuvwxyz'));
-        $str = static::nrot($str,5,'0123456789');
+        $str = static::nrot($str, 13, 'abcdefghijklmnopqrstuvwxyz');
+        $str = static::nrot($str, 13, strtoupper('abcdefghijklmnopqrstuvwxyz'));
+        $str = static::nrot($str, 5, '0123456789');
         return $str;
     }
 
@@ -93,13 +94,13 @@ abstract class HandledError implements Component\ArraySerializableComponent
         $hostCrc = hash('crc32', $hostCrc);
         if (false === $pid = getmypid()) {
             // @codeCoverageIgnoreStart
-            $pid = - 1;
+            $pid = -1;
             // @codeCoverageIgnoreEnd
         }
         
         $rotDigestAlgo = static::str_rot(static::DIGEST_ALGO);
         $digest = $this->getDigest();
-        $rotTimestamp = static::str_rot($this->time);
+        $rotTimestamp = static::str_rot((string) $this->time);
         $uid = $this->getUid();
 
         $ref = static::REFERENCE_FORMAT;
