@@ -4,8 +4,13 @@ declare(strict_types=1);
 
 namespace Katmore\ErrorHandling\Metadata;
 
-class BacktraceNode implements \JsonSerializable
+use Katmore\ErrorHandling\ {
+    Component
+};
+
+class BacktraceNode implements Component\ArraySerializableComponent
 {
+    use Component\ArraySerializableComponentTrait;
     /**
      * @var string
      */
@@ -35,11 +40,6 @@ class BacktraceNode implements \JsonSerializable
      * @var array|null
      */
     protected $args;
-
-    public function jsonSerialize()
-    {
-        return $this->toArray();
-    }
     
     public function toArray(): array
     {

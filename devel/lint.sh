@@ -12,7 +12,7 @@ ME='lint.sh'
 #
 # ECS executable (relative to $APP_DIR)
 [ -n "$ECS_BIN" ] || ECS_BIN=vendor/bin/ecs
-ECS_OPTS='--no-progress-bar --no-ansi --no-interaction'
+ECS_OPTS='--no-progress-bar --no-interaction'
 
 #
 # default source code path(s) (relative to $APP_DIR)
@@ -21,10 +21,12 @@ SOURCE="src tests bin"
 OPTION_STATUS=0
 while getopts :?-: arg; do { case $arg in
    h|u|a) HELP_MODE=1;;
-   v) ;;
+   q) ECS_OPTS=$ECS_OPTS' '--quiet; QUIET=1 ;;
    -) LONG_OPTARG="${OPTARG#*=}"; case $OPTARG in
       help|usage|about) HELP_MODE=1;;
       fix) ECS_OPTS=$ECS_OPTS' '--fix;;
+      quiet) ECS_OPTS=$ECS_OPTS' '--quiet; QUIET=1 ;;
+      no-ansi) ECS_OPTS=$ECS_OPTS' '--no-ansi;;
       '') echo "empty" ;; # end option parsing
       *) >&2 echo "unrecognized long option --$OPTARG"; OPTION_STATUS=2;;
    esac ;;
@@ -107,7 +109,7 @@ fi
 #
 #
 $ECS_BIN $ECS_OPTS check $SOURCE && {
-  echo "$ME: 'easy-coding-standard' lint successful"
+  [ -n "$QUIET" ] || echo "$ME: 'easy-coding-standard' lint successful"
 } || {
   lint_status=$?
   >&2 echo "$ME: 'easy-coding-standard' lint failed with status $lint_status"

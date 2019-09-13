@@ -32,6 +32,11 @@ class PhpError extends HandledError
      * @var Metadata\Backtrace
      */
     protected $backtrace;
+    
+    public function getTypeDesc(): string
+    {
+        return 'Php Error';
+    }
 
     /**
      * Get the file of the PHP error
@@ -116,7 +121,7 @@ class PhpError extends HandledError
         return $phpError;
     }
 
-    protected function withPhpError(int $severity, string $message, ?string $file = null, ?int $line = null): PhpError
+    protected function withErrorData(int $severity, string $message, ?string $file = null, ?int $line = null): PhpError
     {
         /**
          * @var PhpError

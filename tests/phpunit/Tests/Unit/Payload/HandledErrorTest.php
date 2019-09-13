@@ -52,6 +52,10 @@ class HandledErrorTest extends TestCase\Unit
             public function toArray(): array
             {
             }
+            public function getTypeDesc(): string
+            {
+            }
+        
         };
         $this->assertSame($expectedRot, $handledError->actualRot);
     }
@@ -108,6 +112,10 @@ class HandledErrorTest extends TestCase\Unit
             public function toArray(): array
             {
             }
+            public function getTypeDesc(): string
+            {
+            }
+        
         };
 
         $this->assertSame($expectedRot, $handledError->actualRot);
@@ -136,6 +144,10 @@ class HandledErrorTest extends TestCase\Unit
             public function toArray(): array
             {
             }
+            public function getTypeDesc(): string
+            {
+            }
+        
         };
 
         $data[] = [
@@ -177,6 +189,10 @@ class HandledErrorTest extends TestCase\Unit
             public function toArray(): array
             {
             }
+            public function getTypeDesc(): string
+            {
+            }
+        
         };
 
         $data[] = [
@@ -224,6 +240,10 @@ class HandledErrorTest extends TestCase\Unit
             {
                 return $this->handledErrorArray;
             }
+            public function getTypeDesc(): string
+            {
+            }
+        
         };
 
         $data[] = [
@@ -286,6 +306,10 @@ class HandledErrorTest extends TestCase\Unit
             {
                 return $this->handledErrorArray;
             }
+            public function getTypeDesc(): string
+            {
+            }
+        
         };
 
         $data[] = [
@@ -302,6 +326,5 @@ class HandledErrorTest extends TestCase\Unit
     public function testReference(Payload\HandledError $handledError, string $reference): void
     {
         $this->assertSame($reference, $handledError->getReference());
-        
     }
 }

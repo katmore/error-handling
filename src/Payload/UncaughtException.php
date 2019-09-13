@@ -18,6 +18,11 @@ class UncaughtException extends HandledError
      */
     protected $backtrace;
     
+    public function getTypeDesc(): string
+    {
+        return 'Uncaught Exception';
+    }
+    
     public function getException(): \Throwable
     {
         return $this->exception;

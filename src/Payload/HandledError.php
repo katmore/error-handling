@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Katmore\ErrorHandling\Payload;
 
-use Katmore\ErrorHandling\Component;
-use Katmore\ErrorHandling\Metadata;
+use Katmore\ErrorHandling\ {
+    Component,
+    Metadata
+};
 
 abstract class HandledError implements Component\ArraySerializableComponent
 {
@@ -97,7 +99,7 @@ abstract class HandledError implements Component\ArraySerializableComponent
             $pid = -1;
             // @codeCoverageIgnoreEnd
         }
-        
+
         $rotDigestAlgo = static::str_rot(static::DIGEST_ALGO);
         $digest = $this->getDigest();
         $rotTimestamp = static::str_rot((string) $this->time);
@@ -114,6 +116,13 @@ abstract class HandledError implements Component\ArraySerializableComponent
 
         return $ref;
     }
+    
+    /**
+     * Get a brief description of the error type
+     *
+     * @return string A brief description of the error type
+     */
+    abstract public function getTypeDesc(): string;
 
     abstract public function getBacktrace(): Metadata\Backtrace;
 

@@ -14,7 +14,7 @@ class ErrorHandlerFlag
     /**
      * @var int detect cli mode from SAPI
      */
-    public const DETECT_CLI_MODE_SAPI = 0;
+    public const DETECT_SAPI = 0;
 
     /**
      * @var int enable error handler callback
@@ -25,12 +25,12 @@ class ErrorHandlerFlag
      * @var int send errors to error log
      */
     public const SEND_ERROR_LOG = 0;
-    
+
     /**
      * @var int disable error handler callback
      */
     public const DISABLE_CALLBACK = 1;
-    
+
     /**
      * @var int DO NOT send errors to error log
      */

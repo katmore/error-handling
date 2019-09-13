@@ -4,199 +4,169 @@ declare(strict_types=1);
 
 namespace Katmore\ErrorHandling\Handler;
 
-use Katmore\ErrorHandling\Metadata;
+use Katmore\ErrorHandling\ {
+    Event,
+    Metadata,
+    Payload
+};
 
 abstract class ErrorHandler
 {
     /**
-     * @var bool|null determines if error details should be displayed
+     * @var Metadata\BacktraceFactory
      */
-    private $displayErrors;
+    private $backtraceFactory;
 
     /**
-     * @var bool|null determines if cli mode is enabled
+     * @var callable
      */
-    private $cliMode;
-
+    private $errorDocumentHandler;
+    
     /**
-     * Override whether cli mode is enabled
-     *
-     * Explicitly enable or disable cli mode rather than using
-     * the value of the <b><code>PHP_SAPI</code></b> constant.
-     *
-     * @param bool $cliModeOverride
-     *            If the value is <i>true</i>, cli mode will be ENABLED.
-     *            If the value is <i>false</i>, cli mode will be DISABLED.
-     *            If the value is <i>null</i> or no value is provided,
-     *            the override is reset and the default behavior will be applied: the
-     *            value of the <b><code>PHP_SAPI</code></b> constant determines
-     *            if cli mode is enabled.
-     *
-     * @see ErrorHandler::isCliMode()
+     * @var callable
      */
-    final protected function overrideCliMode(?bool $cliModeOverride = null): void
-    {
-        $this->cliMode = $cliModeOverride;
-    }
-
+    private $errorLogHandler;
+    
     /**
-     * Override whether error details should be displayed.
-     *
-     * Explicitly indicate if error details should be displayed
-     * rather than using the return value of <b><code>ini_get('display_errors')</code></b>.
-     *
-     * @param bool $displayErrorsOverride
-     *            If the value is <i>true</i>, error details SHOULD be displayed.
-     *            If the value is <i>false</i>, error details SHOULD NOT be displayed.
-     *            If the value is <i>null</i>, or if no value is provided,
-     *            the override is reset and the default behavior will be applied:
-     *            the return value of <b><code>ini_get('display_errors')</code></b>
-     *            determines if error details should be displayed.
-     *
-     * @see ErrorHandler::displayErrors()
+     * @var Metadata\SystemContext
      */
-    final protected function overrideDisplayErrors(?bool $displayErrorsOverride = null): void
-    {
-        $this->displayErrors = $displayErrorsOverride;
-    }
+    private $systemContext;
 
     /**
      * Enable this error handler's callback
+     * @internal
      */
     abstract protected function enableCallback(): void;
 
     /**
      * Disable this error handler's callback
+     * @internal
      */
     abstract protected function disableCallback(): void;
 
     /**
-     * @see
+     * Set the SystemContext object
+     *
+     * @param Metadata\SystemContext $systemContext The SystemContext object
+     *
+     * @return ErrorHandler for chaining
      */
-    public function isCliMode(): bool
+    public function setSystemContext(Metadata\SystemContext $systemContext)
     {
-        return is_bool($this->cliMode) ? $this->cliMode : PHP_SAPI === 'cli';
+        $this->systemContext = $this->systemContext;
+        return $this;
     }
-
-    public function displayErrors(): bool
+    
+    /**
+     * Set the BacktraceFactory
+     *
+     * @param Metadata\BacktraceFactory $backtraceFactory The BacktraceFactory
+     *
+     * @return ErrorHandler for chaining
+     */
+    public function setBacktraceFactory(Metadata\BacktraceFactory $backtraceFactory)
     {
-        return is_bool($this->displayErrors) ? $this->displayErrors : !!ini_get('display_errors');
+        $this->backtraceFactory = $backtraceFactory;
+        return $this;
     }
 
     /**
-     * Apply flags related to cli mode
+     * Set the error document handler
      *
-     * The value of PHP_SAPI is used to determine whether cli mode is enabled, unless
-     * one of the following flags is provided:
+     * @param callable $errorDocumentHandler The error document handler
+     *
+     * @return ErrorHandler for chaining
+     */
+    public function setErrorDocumentHandler(callable $errorDocumentHandler)
+    {
+        $this->errorDocumentHandler = $errorDocumentHandler;
+        return $this;
+    }
+    
+    /**
+     * Set the error log handler
+     *
+     * @param callable $errorLogHandler The error log handler
+     *
+     * @return ErrorHandler for chaining
+     */
+    public function setErrorLogHandler(callable $errorLogHandler)
+    {
+        $this->errorLogHandler = $errorLogHandler;
+        return $this;
+    }
+
+    /**
+     * Get the error document handler
+     *
+     * @return callable The error document handler
+     * @internal
+     */
+    final protected function getErrorDocumentHandler(): callable
+    {
+        return $this->errorDocumentHandler;
+    }
+
+    /**
+     * Get the BacktraceFactory object
+     *
+     * @return Metadata\BacktraceFactory The BacktraceFactory object
+     * @internal
+     */
+    final protected function getBacktraceFactory(): Metadata\BacktraceFactory
+    {
+        return $this->backtraceFactory;
+    }
+
+    /**
+     * Apply flags related to error callbacks
+     *
      * <ul>
+     *
      * <li><code>ErrorHandlerFlag::ALWAYS_CLI_MODE</code> - Cli mode is always enabled</li>
      * <li><code>ErrorHandlerFlag::NEVER_CLI_MODE</code> - Cli mode is never enabled</li>
      * </ul>
      *
-     * @param int $flags
-     *            bitwise disjunction of flags
+     * @internal
+     *
+     * @param int $flags bitwise disjunction of flags
      *
      * @see ErrorHandlerFlag::ALWAYS_CLI_MODE
      * @see ErrorHandlerFlag::NEVER_CLI_MODE
      */
-    protected function applyCliModeFlags(int $flags): void
+    protected function applyCallbackFlags(int $flags): void
     {
-        if ($flags & ErrorHandlerFlag::ALWAYS_CLI_MODE) {
-            $this->overrideCliMode(true);
-        } elseif ($flags & ErrorHandlerFlag::NEVER_CLI_MODE) {
-            $this->overrideCliMode(false);
-        } else {
-            $this->overrideCliMode();
-        }
-    }
-
-    /**
-     * Apply flags related to enabling handler callback
-     *
-     * <ul>
-     * <li><code>ErrorHandlerFlag::DETECT_CLI_MODE_SAPI</code> - <b>(default)</b> Check <code>PHP_SAPI</code> to determine if cli mode is enabled (e.g. <code>PHP_SAPI==='cli'</code>)</li>
-     * <li><code>ErrorHandlerFlag::ENABLE_CALLBACK</code> - Cli mode is always enabled</li>
-     * <li><code>ErrorHandlerFlag::NEVER_CLI_MODE</code> - Cli mode is never enabled</li>
-     * </ul>
-     *
-     * @param int $flags
-     *            bitwise disjunction of flags
-     *
-     * @see ErrorHandlerFlag::ALWAYS_CLI_MODE
-     * @see ErrorHandlerFlag::NEVER_CLI_MODE
-     */
-    protected function applyEnableCallbackFlags(int $flags): void
-    {
-        if ($flags & ErrorHandlerFlag::ENABLE_CALLBACK) {
-            $this->enableCallback();
-        } else {
+        if ($flags & ErrorHandlerFlag::DISABLE_CALLBACK) {
             $this->disableCallback();
+        } else {
+            $this->enableCallback();
         }
     }
-
-    protected function applyDisplayErrorsFlags(int $flags): void
+    
+    protected function createEvent(Payload\HandledError $errorPayload): Event
     {
-        if ($flags & ErrorHandlerFlag::NEVER_DISPLAY_ERRORS) {
-            $this->overrideDisplayErrors(false);
-        } elseif ($flags & ErrorHandlerFlag::ALWAYS_DISPLAY_ERRORS) {
-            $this->overrideDisplayErrors(true);
-        } else {
-            $this->overrideDisplayErrors();
-        }
-    }
-
-    protected function outputErrorDocument(array $data, array $backtrace, string $ref): void
-    {
-        if (!$this->isCliMode() && !headers_sent()) {
-            http_response_code(500);
-        }
-
-        if (!$this->isCliMode()) {
-            echo "<!--ERROR--><pre>\n";
-        }
-
-        if ($this->displayErrors()) {
-            echo "An error has occurred.\n";
-        } else {
-            echo "We are experiencing difficulties.\n";
-            echo "Please contact support if this problem persists.\n";
-        }
-
-        echo "Reference: $ref\n";
-
-        if ($this->displayErrors()) {
-            array_walk($data, function (string $v, string $f): void {
-                echo "   - $f: $v\n";
-            });
-            if (!empty($backtrace)) {
-                echo "Backtrace:\n";
-                array_walk($backtrace, function (Metadata\BacktraceNode $trace, int $level): void {
-                    echo "   $level.\n";
-                    array_filter($trace->toArray(), function ($v, string $f): void {
-                        if (!is_scalar($v)) {
-                            $v = json_encode($v, JSON_INVALID_UTF8_IGNORE);
-                        }
-                        echo "     - $f: $v\n";
-                    }, ARRAY_FILTER_USE_BOTH);
-                });
+        return (new class() extends Event {
+            public $event;
+            public function __construct(Payload\HandledError $errorPayload, Metadata\SystemContext $systemContext)
+            {
+                $this->event = $this->withPayload($errorPayload);
+                $this->event = $this->withContext($systemContext);
             }
-        }
-
-        if (!$this->isCliMode()) {
-            echo "<!--ERROR--><pre>\n";
-        }
+        })->event;
     }
-
-    /**
-     * @param string[] $logMessage
-     */
-    protected function sendErrorLog(array $logMessage): void
+    
+    protected function callErrorDocumentHandler(Event $errorEvent): void
     {
-        if ($this->isCliMode()) {
-            return;
+        if (is_callable($this->errorDocumentHandler)) {
+            $this->errorDocumentHandler($errorEvent);
         }
-        array_walk($logMessage, function (string $message): void {
-            error_log($message, 0);
-        });
+        $this->defaultErrorDocumentHandler($errorEvent);
+    }
+    
+    protected function callErrorLogHandler(Event $errorEvent): void
+    {
+        if (is_callable($this->errorLogHandler)) {
+            $this->errorDocumentHandler($errorEvent);
+        }
     }
 }

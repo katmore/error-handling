@@ -13,9 +13,11 @@ class BacktraceFactory
      */
     protected $backtraceArray;
 
-    public function setBacktraceArray(array $backtraceArray): void
+    public function setBacktraceArray(array $backtraceArray): self
     {
         $this->backtraceArray = $backtraceArray;
+        
+        return $this;
     }
 
     protected function filteredBacktraceArray(): array
