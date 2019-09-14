@@ -4,3 +4,4 @@
 phpdox.xml
 phpunit.xml
 !/**/.gitkeep
+!/devel/.ecs.sh

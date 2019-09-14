@@ -14,8 +14,11 @@ abstract class HandledError implements Component\ArraySerializableComponent
     use Component\ArraySerializableComponentTrait;
 
     public const DIGEST_ALGO = 'crc32';
+    public const DIGEST_ALGO_ID = [
+        'crc32'=>'01',
+    ];
 
-    public const REFERENCE_FORMAT = '%host-crc%-D%rot-digest-algo%-%digest%-P%pid%-T%rot-timestamp%-%uid%';
+    public const REFERENCE_FORMAT = 'H%host-crc%-D%digest-algo-id%digest%-P%pid%-T%rot-timestamp%-U%uid%';
 
     /**
      * @var string unique id in lowercase hexits

@@ -55,7 +55,6 @@ class HandledErrorTest extends TestCase\Unit
             public function getTypeDesc(): string
             {
             }
-        
         };
         $this->assertSame($expectedRot, $handledError->actualRot);
     }
@@ -115,7 +114,6 @@ class HandledErrorTest extends TestCase\Unit
             public function getTypeDesc(): string
             {
             }
-        
         };
 
         $this->assertSame($expectedRot, $handledError->actualRot);
@@ -147,7 +145,6 @@ class HandledErrorTest extends TestCase\Unit
             public function getTypeDesc(): string
             {
             }
-        
         };
 
         $data[] = [
@@ -192,7 +189,6 @@ class HandledErrorTest extends TestCase\Unit
             public function getTypeDesc(): string
             {
             }
-        
         };
 
         $data[] = [
@@ -243,7 +239,6 @@ class HandledErrorTest extends TestCase\Unit
             public function getTypeDesc(): string
             {
             }
-        
         };
 
         $data[] = [
@@ -309,7 +304,6 @@ class HandledErrorTest extends TestCase\Unit
             public function getTypeDesc(): string
             {
             }
-        
         };
 
         $data[] = [
